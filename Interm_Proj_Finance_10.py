@@ -35,7 +35,7 @@ y_train, y_test = y[:train_size], y[train_size:]
 X_train = np.array(X_train, dtype=np.float32)
 y_train = np.array(y_train, dtype=np.float32)
 
-X_train, y_train = utils.augment_data(X_train, y_train)
+#X_train, y_train = utils.augment_data(X_train, y_train)
 
 plotter = StockPlotter(stock_data, ticker)
 fig1 = plotter.plot()
