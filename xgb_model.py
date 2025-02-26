@@ -17,7 +17,7 @@ class XGBoostModel:
             **self.kwargs  
         )
 
-    def fit(self, X_train, y_train, X_val=None, y_val=None, verbose=True):
+    def fit(self, X_train, y_train, X_val=None, y_val=None, verbose=50):
         """
         Trains the model and tracks training history if validation data is provided.
         """

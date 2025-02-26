@@ -23,47 +23,96 @@ class StockPlotter:
         
         self.stock_data['Date'] = pd.to_datetime(self.stock_data['Date'])
 
-    def plot(self):
+    def plot_closing_price(self):
         """
-        Create subplots for stock closing price, RSI, and MACD.
-
-        Returns:
-            fig (matplotlib.figure.Figure): The created matplotlib figure.
+        Plot the closing price over time.
         """
-        fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(20, 12), sharex=True)
-        
-        # Closing price plot
-        ax1.plot(self.stock_data['Date'], self.stock_data['Close'], label="Closing Price", color='blue')
-        ax1.set_title(f"{self.ticker} Closing Price Over Time")
-        ax1.set_ylabel("Price in USD")
-        ax1.legend()
-        ax1.grid(True)
-        
-        # RSI plot
-        ax2.plot(self.stock_data['Date'], self.stock_data['RSI'], color='purple')
-        ax2.axhline(y=70, color='r', linestyle='--', label="Overbought (70)")
-        ax2.axhline(y=30, color='g', linestyle='--', label="Oversold (30)")
-        ax2.set_title(f'{self.ticker} RSI (Relative Strength Index)')
-        ax2.set_ylabel('RSI')
-        ax2.legend()
-        ax2.grid(True)
-        
-        # MACD plot
-        ax3.plot(self.stock_data['Date'], self.stock_data['MACD'], label='MACD', color='black')
-        ax3.plot(self.stock_data['Date'], self.stock_data['Signal'], label='Signal Line', color='orange')
-        ax3.legend()
-        ax3.set_title(f'{self.ticker} MACD (Moving Average Convergence Divergence)')
-        ax3.set_xlabel("Date")
-        ax3.set_ylabel('Value')
-        ax3.grid(True)
-
-         fig.text(0.1, -0.2, 
-             f"This plot displays the backtest results for {model_name}.\n"
-             "It shows the portfolio balance changes over time based on trade decisions.\n"
-             "Peaks indicate periods of high returns, while dips represent drawdowns.\n"
-             "Use this to evaluate strategy effectiveness and risk management.",
-             fontsize=12, wrap=True)
-
-        
+        fig, ax = plt.subplots(figsize=(20, 10))
+        ax.plot(self.stock_data['Date'], self.stock_data['Close'], label="Closing Price", color='blue')
+        ax.set_title(f"{self.ticker} Closing Price Over Time", fontsize=14)
+        ax.set_ylabel("Price in USD", fontsize=12)
+        ax.legend(fontsize=11)
+        ax.grid(True)
+        ax.set_xlabel("Date", fontsize=12)
+        plt.figtext(0.1, 0.01,  
+                    "Understanding This Chart:\n\n"
+                    "- The blue line represents the closing price trend over time.\n"
+                    "- Use this chart to identify price movements and trends in the stock market.\n",
+                    fontsize=12, ha="left", 
+                    bbox=dict(boxstyle="round,pad=0.5", facecolor="lightgray", edgecolor="black"))
         plt.tight_layout()
-        return fig  
+        return fig
+
+    def plot_rsi(self):
+        """
+        Plot the Relative Strength Index (RSI) over time.
+        """
+        fig, ax = plt.subplots(figsize=(20, 10))
+        ax.plot(self.stock_data['Date'], self.stock_data['RSI'], color='purple')
+        ax.axhline(y=70, color='r', linestyle='--', label="Overbought (70)")
+        ax.axhline(y=30, color='g', linestyle='--', label="Oversold (30)")
+        ax.set_title(f'{self.ticker} RSI (Relative Strength Index)', fontsize=14)
+        ax.set_ylabel('RSI', fontsize=12)
+        ax.legend(fontsize=11)
+        ax.grid(True)
+        ax.set_xlabel("Date", fontsize=12)
+        plt.figtext(0.1, 0.01,  
+                    "Understanding This Chart:\n\n"
+                    "- The purple line represents the RSI over time.\n"
+                    "- The red and green dashed lines indicate overbought and oversold levels.\n"
+                    "- Use this chart to identify potential market reversals.\n",
+                    fontsize=12, ha="left", 
+                    bbox=dict(boxstyle="round,pad=0.5", facecolor="lightgray", edgecolor="black"))
+        plt.tight_layout()
+        return fig
+
+    def plot_macd(self):
+        """
+        Plot the MACD and Signal Line over time.
+        """
+        fig, ax = plt.subplots(figsize=(20, 10))
+        ax.plot(self.stock_data['Date'], self.stock_data['MACD'], label='MACD', color='black')
+        ax.plot(self.stock_data['Date'], self.stock_data['Signal'], label='Signal Line', color='orange')
+        ax.set_title(f'{self.ticker} MACD (Moving Average Convergence Divergence)', fontsize=14)
+        ax.set_xlabel("Date", fontsize=12)
+        ax.set_ylabel('Value', fontsize=12)
+        ax.legend(fontsize=11)
+        ax.grid(True)
+        plt.figtext(0.1, 0.01,  
+                    "Understanding This Chart:\n\n"
+                    "- The black line represents the MACD indicator.\n"
+                    "- The orange line is the Signal Line, helping to confirm trends.\n"
+                    "- Use this chart to identify bullish and bearish signals.\n",
+                    fontsize=12, ha="left", 
+                    bbox=dict(boxstyle="round,pad=0.5", facecolor="lightgray", edgecolor="black"))
+        plt.tight_layout()
+        return fig
+
+    def plot_backtest_results(self, results):
+        """
+        Plot backtest results with realistic portfolio calculations.
+        """
+        fig, ax = plt.subplots(figsize=(20, 10))
+        ax.plot(results['Date'], results['Portfolio Value'], label="Portfolio Value", color='green')
+        ax.set_title(f"{self.ticker} Backtest Results", fontsize=14)
+        ax.set_ylabel("Portfolio Value", fontsize=12)
+        ax.legend(fontsize=11)
+        ax.grid(True)
+        ax.set_xlabel("Date", fontsize=12)
+        plt.figtext(0.1, 0.9,  
+                    "Understanding This Chart:\n\n"
+                    "- The green line represents the portfolio value over time.\n"
+                    "- This chart shows how an investment strategy performed using simulated trades.\n"
+                    "- The strategy follows advanced trading rules:\n"
+                    "  - Buy when RSI is below 30 (oversold) and sell when RSI is above 70 (overbought).\n"
+                    "  - Confirm trades with MACD: Buy when MACD crosses above the Signal Line, sell when it crosses below.\n"
+                    "  - Use a moving average crossover: Buy when the short-term moving average crosses above the long-term moving average.\n"
+                    "  - Apply stop-loss and take-profit levels to manage risk.\n"
+                    "  - Consider volume-based confirmation: Enter trades when high volume supports the trend.\n"
+                    "- Portfolio value is calculated based on these trading actions rather than simple cumulative sums of stock prices.\n"
+                    "This backtest gives an optimal view of how a trader could perform if all conditions align perfectly.\n"
+                    "However, real-world trading involves uncertainties, execution challenges, and external market factors.\n",
+                    fontsize=12, ha="left", 
+                    bbox=dict(boxstyle="round,pad=0.5", facecolor="lightgray", edgecolor="black"))
+        plt.tight_layout()
+        return fig

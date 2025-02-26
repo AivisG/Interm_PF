@@ -24,24 +24,18 @@ class TimeSeriesVisualizer:
 
     def plot_predictions(self):
         """
-        Plots actual vs. predicted values for all models in separate subplots.
-        Includes confidence intervals if available.
+        Plots actual vs. predicted values for each model in separate figures.
 
         Returns:
-            fig (matplotlib.figure.Figure): The created figure.
+            List of figures (list of matplotlib.figure.Figure objects)
         """
         if not self.predictions_dict:
             print("No predictions found. Please run models first.")
-            return None
+            return []
 
-        # ✅ Adjust figure size to A4 landscape
-        fig, axes = plt.subplots(len(self.predictions_dict), 1, figsize=(11.7, 5.8), sharex=True)
-
-        # Ensure axes is iterable when there's only one model
-        if len(self.predictions_dict) == 1:
-            axes = [axes]
-
-        for ax, (model_name, y_pred) in zip(axes, self.predictions_dict.items()):
+        figures = []
+        for model_name, y_pred in self.predictions_dict.items():
+            fig, ax = plt.subplots(figsize=(11.7, 5.8))
             sigma = self.std_devs.get(model_name, None)  # Get standard deviation if available
 
             ax.plot(self.y_test, label='Actual', color='blue', linewidth=2)
@@ -59,25 +53,22 @@ class TimeSeriesVisualizer:
             ax.set_ylabel('Stock Price', fontsize=12)
             ax.legend(fontsize=11)
             ax.grid(True)
+            ax.set_xlabel('Time Steps', fontsize=12)
 
-        axes[-1].set_xlabel('Time Steps', fontsize=12)
+            plt.figtext(0.1, -0.1,  
+                        f"**Understanding This Chart ({model_name}):**\n\n"
+                        "- **Blue Line (Actual)**: Represents true stock price movements.\n"
+                        "- **Red Dashed Line (Predicted)**: Model’s predicted values.\n"
+                        "- **Pink Shaded Area (Confidence Interval)**: Represents prediction uncertainty (if available).\n\n"
+                        " **Use this visualization to evaluate model accuracy and prediction confidence levels.**",
+                        fontsize=12, ha="left", 
+                        bbox=dict(boxstyle="round,pad=0.5", facecolor="lightgray", edgecolor="black"))
 
-        # ✅ Push the figure up to make space for the text below
-        plt.subplots_adjust(bottom=0.25)
-
-        # ✅ Add explanatory text **outside** the figure
-        plt.figtext(0.1, -0.25,  
-                    "**Understanding This Chart:**\n\n"
-                    "- **Blue Line (Actual)**: Represents true stock price movements.\n"
-                    "- **Red Dashed Line (Predicted)**: Model’s predicted values.\n"
-                    "- **Pink Shaded Area (Confidence Interval)**: Represents prediction uncertainty (if available).\n\n"
-                    "📌 **Use this visualization to evaluate model accuracy and prediction confidence levels.**",
-                    fontsize=14, ha="left", 
-                    bbox=dict(boxstyle="round,pad=0.5", facecolor="lightgray", edgecolor="black"))
-
-        plt.tight_layout()
-        return fig 
+            plt.tight_layout()
+            figures.append(fig)
         
+        return figures
+
     def compare_models(self):        
         """
         Plots all model predictions and actual values in a single figure for comparison.
@@ -85,7 +76,6 @@ class TimeSeriesVisualizer:
         Returns:
             fig (matplotlib.figure.Figure): The created figure.
         """
-        # ✅ Adjust figure size to A4 landscape
         fig, ax = plt.subplots(figsize=(11.7, 5.8))
         ax.plot(self.y_test, label='Actual', color='black', linewidth=2)
 
@@ -98,17 +88,13 @@ class TimeSeriesVisualizer:
         ax.legend(fontsize=11)
         ax.grid(True)
 
-        # ✅ Push the figure up to make space for the text below
-        plt.subplots_adjust(bottom=0.25)
-
-        # ✅ Add explanatory text **outside** the figure
-        plt.figtext(0.1, -0.25,  
+        plt.figtext(0.1, -0.1,  
                     "**Comparing Different Forecast Models:**\n\n"
                     "- **Black Line (Actual)**: Represents the true stock price movement.\n"
                     "- **Dashed Lines (Predictions)**: Each model’s forecast.\n\n"
                     "  **Use this comparison to identify the best-performing model for forecasting stock prices.**",
-                    fontsize=14, ha="left", 
+                    fontsize=12, ha="left", 
                     bbox=dict(boxstyle="round,pad=0.5", facecolor="lightgray", edgecolor="black"))
 
         plt.tight_layout()
-        return fig  
+        return fig

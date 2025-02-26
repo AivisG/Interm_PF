@@ -39,26 +39,56 @@ def add_technical_indicators(df):
     return df
 
 def prepare_features(df):
-    # Wähle numerische Spalten
-    numeric_features = df.select_dtypes(include=['float64', 'int64']).columns
-    print(numeric_features)
-    # Standardisiere die Features
-    scaler = StandardScaler()   
-    # Create scaled DataFrames
-    df_standardized = df.copy()
-    # Apply StandardScaler
-    df_standardized[numeric_features]=scaler.fit_transform(df[numeric_features])
-    return df_standardized, scaler
+    """
+    Prepares features by standardizing technical indicators and scaling closing price separately.
+    
+    Returns:
+    - df_scaled: DataFrame with standardized features and scaled target
+    - scaler_features: StandardScaler() for indicators
+    - scaler_target: MinMaxScaler() for closing price
+    """
+    numeric_features = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
+    
+    if 'Close' in numeric_features:
+        numeric_features.remove('Close')  # Exclude Close price from feature scaling
 
-def create_sequences(data, seq_length):
-    sequences = []    
-    targets = []
-    for i in range(len(data) - seq_length):
-        seq = data.iloc[i:(i + seq_length), 1:]  # Skip the first column here
-        target = data.iloc[i + seq_length]['Close']
-        sequences.append(seq)
-        targets.append(target)
-    return np.array(sequences), np.array(targets)
+    # Standardize indicators (mean = 0, std = 1)
+    scaler_features = StandardScaler()
+    df_scaled = df.copy()
+    df_scaled[numeric_features] = scaler_features.fit_transform(df[numeric_features])
+
+    # Scale Close price separately (0 to 1)
+    scaler_target = MinMaxScaler()
+    df_scaled['Close'] = scaler_target.fit_transform(df[['Close']])
+
+    return df_scaled, scaler_features, scaler_target
+
+def create_sequences(df_scaled, target_column, sequence_length):
+    """
+    Creates sequences for time series forecasting.
+    
+    Args:
+    - df_scaled (pd.DataFrame): DataFrame with scaled features and target.
+    - target_column (str): The name of the column used as the target (e.g., 'Close').
+    - sequence_length (int): Number of past time steps to include in each sequence.
+
+    Returns:
+    - X (np.array): Feature sequences of shape (num_samples, sequence_length, num_features)
+    - y (np.array): Target values corresponding to each sequence
+    """
+    df_scaled = df_scaled.drop(columns=['Date'], errors='ignore')  # Drop Date if it exists
+
+    X, y = [], []
+    
+    # Convert DataFrame to NumPy array
+    data = df_scaled.values
+    target_idx = df_scaled.columns.get_loc(target_column)  # Get column index of target
+
+    for i in range(len(data) - sequence_length):
+        X.append(data[i:i+sequence_length, :])  # Take all features
+        y.append(data[i+sequence_length, target_idx])  # Take only the target (Close price)
+
+    return np.array(X, dtype=np.float32), np.array(y, dtype=np.float32)
 
 def minmax_scaler(X_train, X_test):
     scaler = MinMaxScaler()

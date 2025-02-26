@@ -48,7 +48,7 @@ class ModelEvaluator:
         evaluation_results, _ = self.evaluate()  # Evaluate the models internally
 
         # ✅ Set A4 Landscape Size (Queer Layout)
-        fig, ax = plt.subplots(figsize=(11.7, 8.3))  
+        fig, ax = plt.subplots(figsize=(20, 10))  
 
         # Prepare data for plotting
         model_names = []
