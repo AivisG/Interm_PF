@@ -77,7 +77,7 @@ plotter = StockPlotter(stock_data, ticker)
 
 # Generate figures and save them
 fig1 = plotter.plot_closing_price()
-pdf_pages.savefig(fig1)  # Save Closing Price plot
+pdf_pages.savefig(fig1)  # Closing Price plot
 
 fig2 = plotter.plot_rsi()
 pdf_pages.savefig(fig2)  # Save RSI plot
@@ -112,7 +112,7 @@ print("Shape of X_train:", X_train.shape)
 
 xgb_model = Models.XGB_Model(n_estimators=150, max_depth=8, learning_rate=0.05, gamma=0.3, subsample=0.9)
 
-xgb_model.summary()  # ✅ Now the method exists and will print model details
+xgb_model.summary()  #Now the method exists and will print model details
 
 xgb_model.fit(X_train, y_train)
 predictions = xgb_model.predict(X_test)
@@ -191,7 +191,7 @@ else:
 
 #gp_model = GaussianProcessModel()
 fig8 = gp_model.validate(X_train, y_train)
-pdf_pages.savefig(fig8)  # ✅ Save to PDF
+pdf_pages.savefig(fig8)  #Save to PDF
 
 # Close the PDF file
 pdf_pages.close()
