@@ -1,7 +1,10 @@
 import keras_tuner as kt
 import tensorflow as tf
+import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout, Input
+from tensorflow.keras.callbacks import EarlyStopping
+
 
 class LSTM_Model:
     def __init__(self, sequence_length, n_features):
@@ -45,16 +48,30 @@ class LSTM_Model:
         # Create the LSTM model with the best parameters
         self.model = tuner.hypermodel.build(best_hps)    
 
-        # Train the model after tuning
-        self.model.fit(X_train, y_train, epochs=epochs, batch_size=32, validation_split=0.1)
-
         return best_hps
+
+    '''def fit(self, X_train, y_train, epochs=10, batch_size=32, validation_split=0.1):
+        """Fits the model (after tuning)."""
+        if self.model is None:
+            raise ValueError("Model has not been built yet. Run `tune_hyperparameters` first.")
+        return self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_split=validation_split)'''
 
     def fit(self, X_train, y_train, epochs=10, batch_size=32, validation_split=0.1):
         """Fits the model (after tuning)."""
         if self.model is None:
             raise ValueError("Model has not been built yet. Run `tune_hyperparameters` first.")
-        return self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_split=validation_split)
+
+        X_train = np.array(X_train, dtype=np.float32)
+        y_train = np.array(y_train, dtype=np.float32)
+
+        early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+
+        return self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_split=validation_split, callbacks=[early_stopping])
+
+    @tf.function(reduce_retracing=True)
+    def predict_once(self, X):
+        """Predicts output using the trained model while reducing retracing."""
+        return self.model.predict(X)
 
     def predict(self, X):
         """Predicts output using the trained model."""

@@ -56,35 +56,26 @@ class XGBoostModel:
         print(f" - Model Parameters: {self.model.get_params()}\n")
 
     def plot_training_history(self, metric="rmse"):
-        """
-        Plots the training and validation loss from training history.
-    
-        Parameters:
-        metric : str, optional
-            Metric to plot (default is "rmse").
-    
-        Returns:
-        fig : matplotlib.figure.Figure
-            The figure object containing the plot.
-        """
         if self.history is None:
             print("Error: No training history found. Fit the model with validation data first.")
-            return None  # Return None to avoid errors
-
-        fig, ax = plt.subplots(figsize=(10, 6))  # Create a figure
-
-        # ✅ Plot training RMSE
-        if metric in self.history["validation_0"]:
+            return None
+    
+        fig, ax = plt.subplots(figsize=(10, 6))
+    
+        # ✅ Plot training metric
+        if f"validation_0" in self.history and metric in self.history["validation_0"]:
             ax.plot(self.history["validation_0"][metric], label="Training " + metric, color="blue", marker="o")
-
-        # ✅ Plot validation RMSE if available
-        if len(self.history) > 1 and "validation_1" in self.history and metric in self.history["validation_1"]:
+    
+        # ✅ Plot validation metric only if available
+        if "validation_1" in self.history and metric in self.history["validation_1"]:
             ax.plot(self.history["validation_1"][metric], label="Validation " + metric, color="orange", linestyle="dashed", marker="o")
-
+        else:
+            print("Warning: No validation data found in history.")
+    
         ax.set_title(f"Training vs. Validation {metric.upper()} XGBoost")
         ax.set_xlabel("Epochs")
         ax.set_ylabel(metric.upper())
         ax.legend()
         ax.grid(True)
-
-        return fig  # Return figure for saving
+    
+        return fig

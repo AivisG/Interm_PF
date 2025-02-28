@@ -34,8 +34,8 @@ class TimeSeriesVisualizer:
             print("No predictions found. Please run models first.")
             return None
 
-        # ✅ Adjust figure size to A4 landscape
-        fig, axes = plt.subplots(len(self.predictions_dict), 1, figsize=(11.7, 5.8), sharex=True)
+        # Adjust figure size to A4 landscape
+        fig, axes = plt.subplots(len(self.predictions_dict), 1, figsize=(11.7, 8.3), sharex=True, gridspec_kw={'height_ratios': [1] * len(self.predictions_dict)})
 
         # Ensure axes is iterable when there's only one model
         if len(self.predictions_dict) == 1:
@@ -61,54 +61,6 @@ class TimeSeriesVisualizer:
             ax.grid(True)
 
         axes[-1].set_xlabel('Time Steps', fontsize=12)
+        fig.tight_layout()
+        return fig
 
-        # ✅ Push the figure up to make space for the text below
-        plt.subplots_adjust(bottom=0.25)
-
-        # ✅ Add explanatory text **outside** the figure
-        plt.figtext(0.1, -0.25,  
-                    "**Understanding This Chart:**\n\n"
-                    "- **Blue Line (Actual)**: Represents true stock price movements.\n"
-                    "- **Red Dashed Line (Predicted)**: Model’s predicted values.\n"
-                    "- **Pink Shaded Area (Confidence Interval)**: Represents prediction uncertainty (if available).\n\n"
-                    "📌 **Use this visualization to evaluate model accuracy and prediction confidence levels.**",
-                    fontsize=14, ha="left", 
-                    bbox=dict(boxstyle="round,pad=0.5", facecolor="lightgray", edgecolor="black"))
-
-        plt.tight_layout()
-        return fig 
-        
-    def compare_models(self):        
-        """
-        Plots all model predictions and actual values in a single figure for comparison.
-
-        Returns:
-            fig (matplotlib.figure.Figure): The created figure.
-        """
-        # ✅ Adjust figure size to A4 landscape
-        fig, ax = plt.subplots(figsize=(11.7, 5.8))
-        ax.plot(self.y_test, label='Actual', color='black', linewidth=2)
-
-        for model_name, y_pred in self.predictions_dict.items():
-            ax.plot(y_pred, label=f'Predicted ({model_name})', linestyle="dashed")
-
-        ax.set_title(f'{self.ticker} Comparison of Time Series Forecasts', fontsize=14)
-        ax.set_xlabel('Time Steps', fontsize=12)
-        ax.set_ylabel('Stock Price', fontsize=12)
-        ax.legend(fontsize=11)
-        ax.grid(True)
-
-        # ✅ Push the figure up to make space for the text below
-        plt.subplots_adjust(bottom=0.25)
-
-        # ✅ Add explanatory text **outside** the figure
-        plt.figtext(0.1, -0.25,  
-                    "**Comparing Different Forecast Models:**\n\n"
-                    "- **Black Line (Actual)**: Represents the true stock price movement.\n"
-                    "- **Dashed Lines (Predictions)**: Each model’s forecast.\n\n"
-                    "  **Use this comparison to identify the best-performing model for forecasting stock prices.**",
-                    fontsize=14, ha="left", 
-                    bbox=dict(boxstyle="round,pad=0.5", facecolor="lightgray", edgecolor="black"))
-
-        plt.tight_layout()
-        return fig  

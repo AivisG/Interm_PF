@@ -30,40 +30,35 @@ class StockPlotter:
         Returns:
             fig (matplotlib.figure.Figure): The created matplotlib figure.
         """
-        fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(20, 12), sharex=True)
-        
+        # Adjust figure size to A4 landscape
+        fig, axes = plt.subplots(3, 1, figsize=(120, 15, sharex=True, gridspec_kw={'height_ratios': [1, 1, 1]})
+
         # Closing price plot
-        ax1.plot(self.stock_data['Date'], self.stock_data['Close'], label="Closing Price", color='blue')
-        ax1.set_title(f"{self.ticker} Closing Price Over Time")
-        ax1.set_ylabel("Price in USD")
-        ax1.legend()
-        ax1.grid(True)
-        
+        axes[0].plot(self.stock_data['Date'], self.stock_data['Close'], label="Closing Price", color='blue')
+        axes[0].set_title(f"{self.ticker} Closing Price Over Time", fontsize=14)
+        axes[0].set_ylabel("Price in USD", fontsize=12)
+        axes[0].legend(fontsize=11)
+        axes[0].grid(True)
+
         # RSI plot
-        ax2.plot(self.stock_data['Date'], self.stock_data['RSI'], color='purple')
-        ax2.axhline(y=70, color='r', linestyle='--', label="Overbought (70)")
-        ax2.axhline(y=30, color='g', linestyle='--', label="Oversold (30)")
-        ax2.set_title(f'{self.ticker} RSI (Relative Strength Index)')
-        ax2.set_ylabel('RSI')
-        ax2.legend()
-        ax2.grid(True)
-        
+        axes[1].plot(self.stock_data['Date'], self.stock_data['RSI'], color='purple')
+        axes[1].axhline(y=70, color='r', linestyle='--', label="Overbought (70)")
+        axes[1].axhline(y=30, color='g', linestyle='--', label="Oversold (30)")
+        axes[1].set_title(f'{self.ticker} RSI (Relative Strength Index)', fontsize=14)
+        axes[1].set_ylabel('RSI', fontsize=12)
+        axes[1].legend(fontsize=11)
+        axes[1].grid(True)
+
         # MACD plot
-        ax3.plot(self.stock_data['Date'], self.stock_data['MACD'], label='MACD', color='black')
-        ax3.plot(self.stock_data['Date'], self.stock_data['Signal'], label='Signal Line', color='orange')
-        ax3.legend()
-        ax3.set_title(f'{self.ticker} MACD (Moving Average Convergence Divergence)')
-        ax3.set_xlabel("Date")
-        ax3.set_ylabel('Value')
-        ax3.grid(True)
+        axes[2].plot(self.stock_data['Date'], self.stock_data['MACD'], label='MACD', color='black')
+        axes[2].plot(self.stock_data['Date'], self.stock_data['Signal'], label='Signal Line', color='orange')
+        axes[2].legend(fontsize=11)
+        axes[2].set_title(f'{self.ticker} MACD (Moving Average Convergence Divergence)', fontsize=14)
+        axes[2].set_xlabel("Date", fontsize=12)
+        axes[2].set_ylabel('Value', fontsize=12)
+        axes[2].grid(True)
 
-         fig.text(0.1, -0.2, 
-             f"This plot displays the backtest results for {model_name}.\n"
-             "It shows the portfolio balance changes over time based on trade decisions.\n"
-             "Peaks indicate periods of high returns, while dips represent drawdowns.\n"
-             "Use this to evaluate strategy effectiveness and risk management.",
-             fontsize=12, wrap=True)
-
+        # Adjust spacing between subplots
+        fig.tight_layout()
         
-        plt.tight_layout()
-        return fig  
+        return fig

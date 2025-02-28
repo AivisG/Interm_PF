@@ -3,7 +3,7 @@ import datetime
 import os
 
 # Define start and end dates
-start = datetime.datetime(2022, 1, 1)
+start = datetime.datetime(2012, 1, 1)
 end = datetime.datetime(2025, 1, 1)
 
 # Fetch AAPL data from Stooq (since Google Finance is not available in pandas_datareader)

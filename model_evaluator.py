@@ -48,7 +48,7 @@ class ModelEvaluator:
         evaluation_results, _ = self.evaluate()  # Evaluate the models internally
 
         # ✅ Set A4 Landscape Size (Queer Layout)
-        fig, ax = plt.subplots(figsize=(11.7, 8.3))  
+        fig, ax = plt.subplots(figsize=(15, 8.3))  
 
         # Prepare data for plotting
         model_names = []
@@ -96,19 +96,5 @@ class ModelEvaluator:
         add_bar_values(bars_mae)
         add_bar_values(bars_r2)
         add_bar_values(bars_direction)
-
-        # ✅ Push figure up to make space for text
-        fig.subplots_adjust(bottom=0.42)
-
-        # ✅ Add explanatory text below the figure
-        fig.text(0.1, 0.02,  
-                 "**Understanding This Chart:**\n\n"
-                 "- **MSE (Mean Squared Error):** Measures how far predictions deviate from actual values. **Lower is better**.\n"
-                 "- **MAE (Mean Absolute Error):** Similar to MSE but takes absolute differences. **Lower is better**.\n"
-                 "- **R² Score:** Represents how well predictions fit the actual data. **Closer to 1 is better**.\n"
-                 "- **Directional Accuracy:** Measures how often the model predicts the correct trend direction. **Higher is better**.\n\n"
-                 "  **Use this chart to compare models and identify the most accurate predictor for stock prices.**",
-                 fontsize=12, ha="left", wrap=True, 
-                 bbox=dict(boxstyle="round,pad=0.5", facecolor="lightgray", edgecolor="black"))
 
         return fig  # ✅ Return the figure for saving

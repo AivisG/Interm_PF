@@ -1,125 +1,85 @@
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 class BacktestStrategy:
-    def __init__(self, initial_balance=10000, transaction_cost=0.001):
-        """
-        Initializes the backtest strategy.
-
-        Args:
-        - initial_balance (float): Starting money in dollars (default = $10,000)
-        - transaction_cost (float): Cost per trade (e.g., 0.1% default)
-        """
+    def __init__(self, strategy_name: str, initial_balance=10000, output_file="backtest_results.xlsx"):
+        self.strategy_name = strategy_name
         self.initial_balance = initial_balance
-        self.transaction_cost = transaction_cost
+        self.output_file = output_file
 
-    def backtest(self, y_true, y_pred, model_name="Model"):
+    def run_backtest(self, df):
         """
-        Runs a backtest using predicted and actual price data.
-
-        Args:
-        - y_true (array-like): Actual prices
-        - y_pred (array-like): Predicted prices
-        - model_name (str): Name of the model used for predictions
-
-        Returns:
-        - pd.DataFrame: Backtest results with balance history
+        Run a backtesting strategy using df_scaled (already processed data) and save the results.
         """
-        balance = self.initial_balance  # Starting money
-        position = 0  # Number of shares held
-        balance_history = []
-        buy_sell_signals = []  # 1 for buy, -1 for sell, 0 for hold
+        # Ensure data is sorted correctly (from oldest to newest)
+        df = df.sort_values(by='Date', ascending=True).reset_index(drop=True)
 
-        for i in range(len(y_true) - 1):
-            predicted_change = y_pred[i+1] - y_pred[i]
-            
-            if predicted_change > 0:  # Buy if prediction indicates an increase
-                if position == 0:
-                    position = balance / y_true[i]  # Buy as many shares as possible
-                    balance = 0
-                    buy_sell_signals.append(1)  # Buy signal
-                else:
-                    buy_sell_signals.append(0)  # Hold
-            elif predicted_change < 0:  # Sell if prediction indicates a decrease
-                if position > 0:
-                    balance = position * y_true[i]  # Sell all shares
-                    balance -= balance * self.transaction_cost  # Apply transaction cost
-                    position = 0
-                    buy_sell_signals.append(-1)  # Sell signal
-                else:
-                    buy_sell_signals.append(0)  # Hold
-            else:
-                buy_sell_signals.append(0)  # No trade
+        results = df.copy()
+        results['Position'] = 0  
+        results['Portfolio Value'] = float(self.initial_balance)
+        results['Cash'] = float(self.initial_balance)
+        results['Shares Held'] = float(0)
 
-            # Portfolio balance calculation
-            portfolio_value = balance + (position * y_true[i])
-            balance_history.append(portfolio_value)
+        cash = float(self.initial_balance)
+        shares_held = float(0)
+        entry_price = 0  
 
-        # Final balance calculation
-        final_value = balance + (position * y_true[-1])
-        balance_history.append(final_value)
+        results['Short_MA'] = results['Close'].rolling(window=5, min_periods=1).mean()
+        results['Long_MA'] = results['Close'].rolling(window=20, min_periods=1).mean()
+        
+        start_trading_index = 20 if len(results) > 20 else 0  
 
-        # Store results in DataFrame
-        backtest_df = pd.DataFrame({
-            'Actual Price': y_true,
-            'Predicted Price': y_pred,
-            'Portfolio Balance': balance_history,
-            'Trade Signal': [0] + buy_sell_signals  # Shift for alignment
-        })
+        trade_history = []
 
-        print(f"Backtest for {model_name} completed. Final balance: ${final_value:.2f}")
-        return backtest_df
-    
-    def plot_results(self, df, model_name="Model"):
-        """
-        Plots the backtest results.
-    
-        Args:
-        - df (pd.DataFrame): Backtest results DataFrame
-        - model_name (str): Name of the model
-        """
-        fig, ax1 = plt.subplots(figsize=(12,6))
-    
-        ax1.set_xlabel("Time")
-        ax1.set_ylabel("Price", color="blue")
-        ax1.plot(df.index, df["Actual Price"], label="Actual Price", color="blue")
-        ax1.plot(df.index, df["Predicted Price"], label="Predicted Price", color="orange", linestyle="dashed")
-        ax1.legend(loc="upper left")
-    
-        ax2 = ax1.twinx()
-        ax2.set_ylabel("Balance", color="green")
-        ax2.plot(df.index, df["Portfolio Balance"], label="Portfolio Balance", color="green")
-        ax2.legend(loc="upper right")
-    
-        plt.title(f"Backtest Results for {model_name}")
-        plt.show()
-    
-    def evaluate_performance(self, df):
-        """
-        Evaluates backtest performance using key financial metrics.
-    
-        Args:
-        - df (pd.DataFrame): Backtest results DataFrame
-    
-        Returns:
-        - dict: Performance metrics including final balance, total return, Sharpe ratio, max drawdown.
-        """
-        final_balance = df["Portfolio Balance"].iloc[-1]
-        total_return = (final_balance - self.initial_balance) / self.initial_balance
-        returns = df["Portfolio Balance"].pct_change().dropna()
-        sharpe_ratio = returns.mean() / returns.std()
-        max_drawdown = (df["Portfolio Balance"].cummax() - df["Portfolio Balance"]).max() / df["Portfolio Balance"].cummax().max()
-    
-        metrics = {
-            "Final Balance": final_balance,
-            "Total Return": total_return,
-            "Sharpe Ratio": sharpe_ratio,
-            "Max Drawdown": max_drawdown
-        }
-    
-        print("\nPerformance Metrics:")
-        for key, value in metrics.items():
-            print(f"{key}: {value:.4f}")
-    
-        return metrics
+        for i in range(start_trading_index, len(results)):
+            rsi = results['RSI'].iloc[i]
+            macd = results['MACD'].iloc[i]
+            signal = results['Signal'].iloc[i]
+            short_ma = results['Short_MA'].iloc[i]
+            long_ma = results['Long_MA'].iloc[i]
+            close_price = results['Close'].iloc[i]
+
+            trade_action = "HOLD"  
+
+            # Only Buy If RSI is Rising AND Price Has Increased in the Last 3 Days
+            if rsi > results['RSI'].iloc[i-1] and close_price > results['Close'].iloc[i-3] and macd > signal and short_ma > long_ma:
+                if cash > 0:  
+                    shares_to_buy = cash / close_price
+                    shares_held += shares_to_buy
+                    cash = 0  
+                    entry_price = close_price  
+                    results.at[results.index[i], 'Position'] = 1  
+                    trade_action = "BUY"
+
+            # Only Sell If the Price Has Grown at Least 2% Since Buying
+            elif shares_held > 0 and close_price > entry_price * 1.02 and macd < signal and short_ma < long_ma:
+                cash = shares_held * close_price
+                shares_held = 0  
+                entry_price = 0  
+                results.at[results.index[i], 'Position'] = -1  
+                trade_action = "SELL"
+
+            portfolio_value = cash + (shares_held * close_price)
+            results.at[results.index[i], 'Portfolio Value'] = float(portfolio_value)
+            results.at[results.index[i], 'Cash'] = float(cash)
+            results.at[results.index[i], 'Shares Held'] = float(shares_held)
+
+            trade_history.append({
+                "Date": results['Date'].iloc[i],
+                "Close": close_price,
+                "RSI": rsi,
+                "MACD": macd,
+                "Signal": signal,
+                "Short_MA": short_ma,
+                "Long_MA": long_ma,
+                "Trade Action": trade_action,
+                "Shares Held": shares_held,
+                "Cash": cash,
+                "Portfolio Value": portfolio_value
+            })
+
+        trade_df = pd.DataFrame(trade_history)
+        trade_df.to_excel(self.output_file, index=False)
+
+        print(f"Backtest results saved to {self.output_file}")
+
+        return results

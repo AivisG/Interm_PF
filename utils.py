@@ -32,10 +32,10 @@ def calculate_bollinger_bands(close_prices, window=20, num_std_dev=2):
     lower_band = rolling_mean - (num_std_dev * rolling_std)  # Lower band
     return upper_band, rolling_mean, lower_band
 
-def add_technical_indicators(df):
-    df['RSI'] = calculate_rsi(df['Close'], window=14)
-    df['MACD'], df['Signal'] = calculate_macd(df['Close'])
-    df['BB_upper'], df['BB_middle'], df['BB_lower'] = calculate_bollinger_bands(df['Close'])
+def add_technical_indicators(df, name):
+    df['RSI'] = calculate_rsi(df[name], window=14)
+    df['MACD'], df['Signal'] = calculate_macd(df[name])
+    df['BB_upper'], df['BB_middle'], df['BB_lower'] = calculate_bollinger_bands(df[name])
     return df
 
 def prepare_features(df):
@@ -43,12 +43,13 @@ def prepare_features(df):
     numeric_features = df.select_dtypes(include=['float64', 'int64']).columns
     print(numeric_features)
     # Standardisiere die Features
-    scaler = StandardScaler()   
+    #scaler = StandardScaler()   
+    scaler = MinMaxScaler()
     # Create scaled DataFrames
-    df_standardized = df.copy()
+    df_scaled = df.copy()
     # Apply StandardScaler
-    df_standardized[numeric_features]=scaler.fit_transform(df[numeric_features])
-    return df_standardized, scaler
+    df_scaled[numeric_features]=scaler.fit_transform(df[numeric_features])
+    return df_scaled, scaler
 
 def create_sequences(data, seq_length):
     sequences = []    
