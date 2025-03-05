@@ -1,11 +1,9 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 import os
 from matplotlib.backends.backend_pdf import PdfPages
-import datetime
 
 def calculate_rsi(close_prices, window=14):
     
@@ -69,14 +67,14 @@ def minmax_scaler(X_train, X_test):
 
 def create_pdf(subfolder, filename):
     """Create a PdfPages object and return it, ensuring the folder exists."""
-    os.makedirs(subfolder, exist_ok=True)  # ✅ Ensure the folder exists
+    os.makedirs(subfolder, exist_ok=True)  # Ensure the folder exists
     pdf_path = os.path.join(subfolder, filename)
-    return PdfPages(pdf_path), pdf_path  # ✅ Return PdfPages object and file path
+    return PdfPages(pdf_path), pdf_path  # Return PdfPages object and file path
 
 def save_plot_to_pdf(pdf_pages, fig):
     """Save a matplotlib figure to the provided PdfPages object."""
     if pdf_pages:
-        pdf_pages.savefig(fig)  # ✅ Save the plot
+        pdf_pages.savefig(fig)  # Save the plot
         print("Plot saved to PDF.")
     else:
         print("Error: pdf_pages is None. Cannot save plot.")

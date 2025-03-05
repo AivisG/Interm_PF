@@ -15,17 +15,17 @@ class LSTM_Model:
     def create_lstm_model(self, hp):
         """Creates an LSTM model with tunable hyperparameters (uses Keras Tuner)."""
         neurons = hp.Int('neurons', min_value=50, max_value=200, step=50)
-        dropout = hp.Choice('dropout', [0.2, 0.3, 0.4])
+        dropout = hp.Choice('dropout', [0.2, 0.3, 0.4]) #Prevents overfitting by randomly setting a fraction of input units to zero during training
         optimizer = tf.keras.optimizers.get(hp.Choice('optimizer', ['adam', 'rmsprop']))
 
         model = Sequential([
             Input(shape=(self.sequence_length, self.n_features)),  
-            LSTM(neurons, return_sequences=True),
+            LSTM(neurons, return_sequences=True), #return_sequences=True because another layer follows
             Dropout(dropout),
             LSTM(neurons),
             Dropout(dropout),
             Dense(1)
-        ])        
+        ])     # no activation function for time series forecasting
         model.compile(optimizer=optimizer, loss='mse')
         return model
 
@@ -41,10 +41,12 @@ class LSTM_Model:
         )
 
         tuner.search(X_train, y_train, epochs=epochs, batch_size=32, validation_split=0.1)
-
-        # Get the best hyperparameters
-        best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
-
+        
+        best_hps = tuner.get_best_hyperparameters(num_trials=1)[0] # Get the best hyperparameters
+        
+        for param in best_hps.values: #get best parameters printed on screen
+            print(param, ":", best_hps.get(param))
+            
         # Create the LSTM model with the best parameters
         self.model = tuner.hypermodel.build(best_hps)    
 

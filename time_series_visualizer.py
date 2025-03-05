@@ -35,13 +35,15 @@ class TimeSeriesVisualizer:
             return None
 
         # Adjust figure size to A4 landscape
-        fig, axes = plt.subplots(len(self.predictions_dict), 1, figsize=(11.7, 8.3), sharex=True, gridspec_kw={'height_ratios': [1] * len(self.predictions_dict)})
+        fig, axes = plt.subplots(len(self.predictions_dict), 1, figsize=(15, 8.3), sharex=True, gridspec_kw={'height_ratios': [1] * len(self.predictions_dict)})
 
         # Ensure axes is iterable when there's only one model
         if len(self.predictions_dict) == 1:
             axes = [axes]
 
+        fig_index = 8
         for ax, (model_name, y_pred) in zip(axes, self.predictions_dict.items()):
+            
             sigma = self.std_devs.get(model_name, None)  # Get standard deviation if available
 
             ax.plot(self.y_test, label='Actual', color='blue', linewidth=2)
@@ -54,8 +56,8 @@ class TimeSeriesVisualizer:
                                 y_pred - 1.96 * sigma, 
                                 y_pred + 1.96 * sigma, 
                                 color='pink', alpha=0.3, label='Confidence Interval')
-
-            ax.set_title(f'{self.ticker} Time Series Forecast: {model_name}', fontsize=14)
+            fig_index += 1
+            ax.set_title(f'Fig {fig_index} {self.ticker} Time Series Forecast: {model_name}', fontsize=14)
             ax.set_ylabel('Stock Price', fontsize=12)
             ax.legend(fontsize=11)
             ax.grid(True)

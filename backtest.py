@@ -93,7 +93,7 @@ class BacktestStrategy:
         """
         fig, ax = plt.subplots(figsize=(20, 10))
         ax.plot(results['Date'], results['Portfolio Value'], label="Portfolio Value", color='green')
-        ax.set_title(f"{self.ticker} Backtest Results", fontsize=14)
+        ax.set_title(f"Fig 4 {self.ticker} Backtest Results", fontsize=14)
         ax.set_ylabel("Portfolio Value", fontsize=12)
         ax.legend(fontsize=11)
         ax.grid(True)
